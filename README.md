@@ -25,14 +25,16 @@ Runs as a **Home Assistant Add-on** — installed directly from the HA UI, no se
 
 ## Installation
 
-1. In Home Assistant go to **Settings → Add-ons → Add-on Store**
-2. Click **⋮ → Repositories** and add:
+1. In Home Assistant go to **Settings → Apps**
+2. Click the **Install app** button (bottom right)
+3. Tap the **⋮ menu** (top right) and select **Repositories**
+4. Enter the repository URL and click **Add**:
    ```
    https://github.com/chris-wild/home-assistant-mcp-proxy
    ```
-3. Find **Home Assistant MCP Proxy** in the store and click **Install**
-4. Go to the **Configuration** tab and fill in your settings (see below)
-5. Start the add-on — it listens on port **8745**
+5. Find **Home Assistant MCP Proxy** in the store and click **Install**
+6. Go to the **Configuration** tab and fill in your settings (see below)
+7. Start the add-on — it listens on port **8745**
 
 Verify it's running:
 ```bash
