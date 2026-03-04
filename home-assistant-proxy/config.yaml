@@ -2,7 +2,7 @@ name: "Home Assistant MCP Proxy"
 version: "0.0.1"
 slug: "home_assistant_mcp_proxy"
 description: "API-first MCP server sitting in front of Home Assistant"
-url: "https://github.com/example/home-assistant-proxy"
+url: "https://github.com/chris-wild/home-assistant-mcp-proxy"
 icon: "mdi:home-automation"
 init: false
 startup: services
