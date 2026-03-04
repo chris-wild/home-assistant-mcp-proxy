@@ -1,15 +1,16 @@
-"""Home Assistant MCP tool implementations."""
+"""Home Assistant tool handler functions.
+
+These are pure-logic functions called by the FastMCP tool wrappers in
+mcp_server.py.  They have no knowledge of the transport layer.
+"""
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Awaitable, Callable, Dict, List
+from typing import List
 
 from .confirmation import CONFIRMATION_TTL_SECONDS, confirmation_store
 from .ha_client import ha_client
 from .policy import PolicyDecision, evaluate_entity, evaluate_service
-from .schemas import EntityState, ToolCall, ToolResponse
-
-ToolHandler = Callable[[dict], Awaitable[ToolResponse]]
+from .schemas import EntityState, ToolResponse
 
 
 class ToolExecutionError(Exception):
@@ -19,35 +20,6 @@ class ToolExecutionError(Exception):
         super().__init__(detail)
         self.status_code = status_code
         self.detail = detail
-
-
-@dataclass
-class ToolDefinition:
-    name: str
-    description: str
-    input_schema: Dict
-    handler: ToolHandler
-
-
-async def execute_tool(call: ToolCall) -> ToolResponse:
-    definition = _TOOL_REGISTRY.get(call.tool)
-    if not definition:
-        raise ToolExecutionError(404, f"Unknown tool '{call.tool}'")
-
-    arguments = call.arguments or {}
-    return await definition.handler(arguments)
-
-
-def describe_tools() -> List[Dict]:
-    """Return MCP-style tool metadata without handlers."""
-    return [
-        {
-            "name": definition.name,
-            "description": definition.description,
-            "input_schema": definition.input_schema,
-        }
-        for definition in _TOOL_REGISTRY.values()
-    ]
 
 
 # ---------------------------------------------------------------------------
@@ -154,7 +126,6 @@ async def _handle_call_service(arguments: dict | None) -> ToolResponse:
 
     if decision.decision == PolicyDecision.REQUIRE_CONFIRMATION:
         if not confirmation_token:
-            # Issue a new token and ask the caller to confirm.
             token = confirmation_store.issue(domain, service, target, data)
             raise ToolExecutionError(
                 409,
@@ -164,7 +135,6 @@ async def _handle_call_service(arguments: dict | None) -> ToolResponse:
                     f"|reason={decision.reason or 'High-risk service requires confirmation'}"
                 ),
             )
-        # Validate the supplied token.
         pending = confirmation_store.consume(confirmation_token, domain, service)
         if pending is None:
             raise ToolExecutionError(
@@ -172,7 +142,6 @@ async def _handle_call_service(arguments: dict | None) -> ToolResponse:
                 "Invalid, expired, or mismatched confirmation_token. "
                 "Request a new token by calling without confirmation_token.",
             )
-        # Use target/data from the original token (prevents replay with different args).
         target = pending.target
         data = pending.data
 
@@ -188,98 +157,3 @@ def _extract_domain(entity_id: str | None) -> str | None:
     if not entity_id or "." not in entity_id:
         return None
     return entity_id.split(".", 1)[0]
-
-
-# ---------------------------------------------------------------------------
-# Tool registry
-# ---------------------------------------------------------------------------
-
-_TOOL_REGISTRY: Dict[str, ToolDefinition] = {
-    "ha_list_entities": ToolDefinition(
-        name="ha_list_entities",
-        description="List policy-approved Home Assistant entities (optionally by domain).",
-        input_schema={
-            "type": "object",
-            "properties": {
-                "domain": {
-                    "type": "string",
-                    "description": "Optional Home Assistant domain filter (e.g. 'light').",
-                }
-            },
-            "required": [],
-            "additionalProperties": False,
-        },
-        handler=_handle_list_entities,
-    ),
-    "ha_get_state": ToolDefinition(
-        name="ha_get_state",
-        description="Fetch the latest state for a single Home Assistant entity (policy enforced).",
-        input_schema={
-            "type": "object",
-            "properties": {
-                "entity_id": {
-                    "type": "string",
-                    "description": "Fully qualified entity_id (e.g. 'light.kitchen').",
-                }
-            },
-            "required": ["entity_id"],
-            "additionalProperties": False,
-        },
-        handler=_handle_get_state,
-    ),
-    "ha_list_areas": ToolDefinition(
-        name="ha_list_areas",
-        description="List all Home Assistant areas (rooms/zones) with their IDs and names.",
-        input_schema={
-            "type": "object",
-            "properties": {},
-            "required": [],
-            "additionalProperties": False,
-        },
-        handler=_handle_list_areas,
-    ),
-    "ha_call_service": ToolDefinition(
-        name="ha_call_service",
-        description=(
-            "Call a Home Assistant service (write operation). "
-            "Subject to domain allowlist and confirmation requirements for high-risk domains. "
-            "If a 409 is returned, re-send the same call with the provided confirmation_token."
-        ),
-        input_schema={
-            "type": "object",
-            "properties": {
-                "domain": {
-                    "type": "string",
-                    "description": "HA domain (e.g. 'light', 'switch', 'lock').",
-                },
-                "service": {
-                    "type": "string",
-                    "description": "Service name (e.g. 'turn_on', 'turn_off', 'lock').",
-                },
-                "target": {
-                    "type": "object",
-                    "description": (
-                        "Target selector. May contain entity_id, area_id, or device_id "
-                        "(each a string or list of strings)."
-                    ),
-                    "additionalProperties": True,
-                },
-                "data": {
-                    "type": "object",
-                    "description": "Extra service data (e.g. brightness, temperature).",
-                    "additionalProperties": True,
-                },
-                "confirmation_token": {
-                    "type": "string",
-                    "description": (
-                        "Confirmation token returned in a previous 409 response. "
-                        "Required for high-risk service calls."
-                    ),
-                },
-            },
-            "required": ["domain", "service"],
-            "additionalProperties": False,
-        },
-        handler=_handle_call_service,
-    ),
-}

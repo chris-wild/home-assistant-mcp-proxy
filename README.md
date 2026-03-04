@@ -1,6 +1,6 @@
 # Home Assistant MCP Proxy
 
-A lightweight MCP-style tool server that sits in front of Home Assistant, giving Openclaw agents safe, auditable, policy-enforced access to your home.
+A lightweight MCP server that sits in front of Home Assistant, giving Openclaw agents safe, auditable, policy-enforced access to your home.
 
 Rather than letting an agent call the Home Assistant API directly, all requests flow through this server which enforces allowlists, blocks high-risk actions, requires explicit confirmation tokens for sensitive operations, and emits structured audit logs for every call.
 
@@ -9,9 +9,9 @@ Rather than letting an agent call the Home Assistant API directly, all requests 
 ## Architecture
 
 ```
-Openclaw agent
+Openclaw agent  (or any MCP client)
       |
-      | tool calls  (HTTP JSON)
+      | MCP / Streamable HTTP  → http://<ha-ip>:8745/mcp
       v
 HA MCP Proxy  ──  policy engine  ──  audit log
       |
@@ -37,7 +37,11 @@ Runs as a **Home Assistant Add-on** — installed directly from the HA UI, no se
 Verify it's running:
 ```bash
 curl http://<your-ha-ip>:8745/health
-curl http://<your-ha-ip>:8745/mcp/tools
+```
+
+Connect any MCP client to:
+```
+http://<your-ha-ip>:8745/mcp
 ```
 
 ---
@@ -123,7 +127,7 @@ Every tool call is evaluated before hitting Home Assistant:
 
 ## Audit logging
 
-Every request to `/mcp/tools/call` emits a structured JSON log record:
+Every tool call emits a structured JSON log record:
 
 ```json
 {
@@ -151,20 +155,24 @@ cd home-assistant-proxy/mcp_server
 
 # Create a virtual environment and install deps
 python3 -m venv .venv
-.venv/bin/pip install -r requirements-dev.txt
+.venv/bin/pip install -r requirements-dev.txt   # unit-test deps (no mcp)
 
-# Run tests
+# Run unit tests
 .venv/bin/python -m pytest tests/ -v
 
-# Local smoke test (compiles, imports, boots uvicorn, hits /health)
+# Local smoke test — compiles, imports, boots uvicorn, hits /health
+# (requires Python 3.10+ because of the mcp dependency)
+pip install -r requirements.txt
 PYTHON_BIN=.venv/bin/python3 ./scripts/local-verify.sh
+
+# Interactive MCP inspector (opens http://localhost:6274)
+fastmcp dev app/mcp_server.py
 ```
 
 ---
 
 ## Roadmap
 
-- **Proper MCP protocol** — implement JSON-RPC over HTTP+SSE so any standard MCP client can connect without a custom adapter
 - **More tools** — `ha_list_scenes`, `ha_activate_scene`, `ha_trigger_automation`, `ha_get_history`
 - **Area filtering** — `ha_list_entities(area_id=...)`
 - **API authentication** — bearer token on the proxy endpoint itself

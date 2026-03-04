@@ -6,6 +6,17 @@ PYTHON_BIN="${PYTHON_BIN:-python3}"
 
 cd "$ROOT_DIR"
 
+# mcp (FastMCP) requires Python 3.10+.  On older Pythons we can still run the
+# unit tests (which don't import the transport layer), but we skip the server
+# import / uvicorn steps.
+PY_MINOR=$("$PYTHON_BIN" -c "import sys; print(sys.version_info.minor)")
+if [ "$PY_MINOR" -lt 10 ]; then
+  echo "Python < 3.10 detected: skipping server steps (mcp requires 3.10+)."
+  echo "Running unit tests only."
+  "$PYTHON_BIN" -m pytest tests/ -q
+  exit $?
+fi
+
 echo "[1/3] Compiling sources"
 "$PYTHON_BIN" -m compileall app >/dev/null
 
