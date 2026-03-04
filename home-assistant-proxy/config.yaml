@@ -1,0 +1,41 @@
+name: "Home Assistant MCP Proxy"
+version: "0.0.1"
+slug: "home_assistant_mcp_proxy"
+description: "API-first MCP server sitting in front of Home Assistant"
+url: "https://github.com/example/home-assistant-proxy"
+icon: "mdi:home-automation"
+init: false
+startup: services
+arch:
+  - amd64
+  - aarch64
+  - armv7
+ingress: false
+panel_icon: "mdi:robot"
+ports:
+  8745/tcp: 8745
+ports_description:
+  8745/tcp: MCP HTTP API
+apparmor: true
+hassio_api: true
+hassio_role: default
+homeassistant_api: true
+options:
+  home_assistant_url: "http://supervisor/core"
+  access_token: ""
+  allowed_entities: []
+  allowed_domains:
+    - light
+  log_level: info
+  confirmation_required_for:
+    - lock
+schema:
+  home_assistant_url: "str?"
+  access_token: "str?"
+  allowed_entities:
+    - "str"
+  allowed_domains:
+    - "str"
+  log_level: "list(info|debug|warning|error|critical)"
+  confirmation_required_for:
+    - "str"

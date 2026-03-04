@@ -1,0 +1,16 @@
+# Python local environment — never copy into the image
+mcp_server/.venv
+
+# Test suite and dev tooling
+mcp_server/tests
+mcp_server/pytest.ini
+mcp_server/requirements-dev.txt
+
+# Byte-compiled / cache files
+mcp_server/**/__pycache__
+mcp_server/**/*.pyc
+mcp_server/**/*.pyo
+mcp_server/.pytest_cache
+
+# macOS metadata
+.DS_Store
