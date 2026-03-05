@@ -48,6 +48,19 @@ http://<your-ha-ip>:8745/mcp
 
 ---
 
+## Known Issues
+
+### Re-installation doesn't pick up the latest version 🐛
+
+When updating to a new version, simply uninstalling and reinstalling the add-on is **not sufficient** — HA caches the repository and will reinstall the old image.
+
+To force a clean install:
+1. Uninstall the add-on (tick **Delete all data** if prompted)
+2. Go to **Settings → Apps → ⋮ menu → Repositories** and remove the repository
+3. Re-add the repository URL and reinstall the add-on
+
+---
+
 ## Configuration
 
 Set these options in the add-on Configuration tab:
