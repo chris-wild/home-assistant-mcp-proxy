@@ -87,6 +87,10 @@ class HomeAssistantClient:
         response = await self._request("GET", "/api/states")
         return response.json()
 
+    async def list_scenes(self) -> list[dict]:
+        response = await self._request("GET", "/api/states")
+        return [e for e in response.json() if e.get("entity_id", "").startswith("scene.")]
+
     async def get_state(self, entity_id: str) -> dict:
         response = await self._request("GET", f"/api/states/{entity_id}")
         return response.json()

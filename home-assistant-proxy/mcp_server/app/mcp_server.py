@@ -19,6 +19,7 @@ from .ha_tools import (
     _handle_get_state,
     _handle_list_areas,
     _handle_list_entities,
+    _handle_list_scenes,
 )
 
 mcp = FastMCP("Home Assistant MCP Proxy")
@@ -86,6 +87,17 @@ async def ha_list_entities(domain: str = "") -> list:
 async def ha_list_areas() -> list:
     """List all Home Assistant areas (rooms/zones) with their IDs and names."""
     result = await _audited("ha_list_areas", {}, _handle_list_areas({}))
+    return result.data
+
+
+@mcp.tool
+async def ha_list_scenes() -> list:
+    """List all policy-approved Home Assistant scenes.
+
+    Returns scenes with their entity_id, state, and attributes.
+    Scenes in denied domains are silently excluded.
+    """
+    result = await _audited("ha_list_scenes", {}, _handle_list_scenes({}))
     return result.data
 
 

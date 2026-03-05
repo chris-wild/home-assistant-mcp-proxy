@@ -31,7 +31,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Home Assistant MCP Proxy",
-    version="0.4.3",
+    version="0.4.4",
     docs_url="/docs",
     redoc_url="/redoc",
     lifespan=lifespan,

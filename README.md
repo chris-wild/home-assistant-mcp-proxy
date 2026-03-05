@@ -99,6 +99,13 @@ List all Home Assistant areas (rooms/zones) with their IDs and names.
 {}
 ```
 
+### `ha_list_scenes`
+List all policy-approved Home Assistant scenes.
+
+```json
+{}
+```
+
 ### `ha_call_service`
 Call a Home Assistant service. Subject to domain allowlists and confirmation requirements.
 
@@ -188,7 +195,7 @@ fastmcp dev app/mcp_server.py
 
 ## Roadmap
 
-- **More tools** — `ha_list_scenes`, `ha_activate_scene`, `ha_trigger_automation`, `ha_get_history`
+- **More tools** — `ha_activate_scene`, `ha_trigger_automation`, `ha_get_history`
 - **Area filtering** — `ha_list_entities(area_id=...)`
 - **API authentication** — bearer token on the proxy endpoint itself
 - **Supervisor token** — use the injected `SUPERVISOR_TOKEN` instead of a manually configured access token

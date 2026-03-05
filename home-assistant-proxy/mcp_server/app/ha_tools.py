@@ -97,6 +97,29 @@ async def _handle_list_areas(arguments: dict | None) -> ToolResponse:  # noqa: A
 
 
 # ---------------------------------------------------------------------------
+# ha_list_scenes
+# ---------------------------------------------------------------------------
+
+async def _handle_list_scenes(arguments: dict | None) -> ToolResponse:  # noqa: ARG001
+    """Return all policy-approved Home Assistant scenes."""
+    scenes_raw = await ha_client.list_scenes()
+    filtered = []
+    for scene in scenes_raw:
+        entity_id = scene.get("entity_id")
+        if not isinstance(entity_id, str):
+            continue
+        decision = evaluate_entity(entity_id=entity_id, domain="scene")
+        if decision.decision != PolicyDecision.ALLOW:
+            continue
+        filtered.append({
+            "entity_id": entity_id,
+            "state": str(scene.get("state", "")),
+            "attributes": scene.get("attributes") or {},
+        })
+    return ToolResponse(status="ok", data=filtered, detail=None)
+
+
+# ---------------------------------------------------------------------------
 # ha_call_service
 # ---------------------------------------------------------------------------
 
