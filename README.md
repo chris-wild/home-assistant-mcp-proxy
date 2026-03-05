@@ -198,5 +198,5 @@ fastmcp dev app/mcp_server.py
 - **More tools** — `ha_activate_scene`, `ha_trigger_automation`, `ha_get_history`
 - **Area filtering** — `ha_list_entities(area_id=...)`
 - **API authentication** — bearer token on the proxy endpoint itself
-- **Supervisor token** — use the injected `SUPERVISOR_TOKEN` instead of a manually configured access token
+- ~~**Supervisor token** — use the injected `SUPERVISOR_TOKEN` instead of a manually configured access token~~ ✅ done — `SUPERVISOR_TOKEN` is used automatically when `access_token` is not set
 - **Live HA health check** — `/health` that actually pings the HA API

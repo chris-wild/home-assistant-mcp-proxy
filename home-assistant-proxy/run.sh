@@ -8,6 +8,12 @@ ALLOWED_DOMAINS=$(bashio::config 'allowed_domains')
 LOG_LEVEL=$(bashio::config 'log_level')
 CONFIRM_DOMAINS=$(bashio::config 'confirmation_required_for')
 
+# Fall back to the Supervisor-injected token if no access_token is configured.
+# This allows the add-on to work out of the box without a long-lived token.
+if [ -z "$ACCESS_TOKEN" ] || [ "$ACCESS_TOKEN" = "null" ]; then
+    ACCESS_TOKEN="${SUPERVISOR_TOKEN:-}"
+fi
+
 export MCP_HOME_ASSISTANT_URL="$HA_URL"
 export MCP_HOME_ASSISTANT_TOKEN="$ACCESS_TOKEN"
 export MCP_ALLOWED_ENTITIES="$ALLOWED_ENTITIES"
