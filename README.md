@@ -119,6 +119,15 @@ List all policy-approved Home Assistant scenes.
 {}
 ```
 
+### `ha_activate_scene`
+Activate a Home Assistant scene. The `scene` domain must be in `allowed_domains`.
+
+```json
+{ "scene_id": "scene.movie_night" }
+```
+
+Use `ha_list_scenes` to discover available scene IDs.
+
 ### `ha_call_service`
 Call a Home Assistant service. Subject to domain allowlists and confirmation requirements.
 
@@ -208,7 +217,7 @@ fastmcp dev app/mcp_server.py
 
 ## Roadmap
 
-- **More tools** — `ha_activate_scene`, `ha_trigger_automation`, `ha_get_history`
+- **More tools** — `ha_trigger_automation`, `ha_get_history`
 - **Area filtering** — `ha_list_entities(area_id=...)`
 - **API authentication** — bearer token on the proxy endpoint itself
 - ~~**Supervisor token** — use the injected `SUPERVISOR_TOKEN` instead of a manually configured access token~~ ✅ done — `SUPERVISOR_TOKEN` is used automatically when `access_token` is not set

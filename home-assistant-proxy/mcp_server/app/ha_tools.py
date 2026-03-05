@@ -120,6 +120,28 @@ async def _handle_list_scenes(arguments: dict | None) -> ToolResponse:  # noqa: 
 
 
 # ---------------------------------------------------------------------------
+# ha_activate_scene
+# ---------------------------------------------------------------------------
+
+async def _handle_activate_scene(arguments: dict | None) -> ToolResponse:
+    args = arguments or {}
+    scene_id = args.get("scene_id")
+    if not scene_id or not isinstance(scene_id, str):
+        raise ToolExecutionError(400, "scene_id is required and must be a string")
+    if not scene_id.startswith("scene."):
+        raise ToolExecutionError(400, "scene_id must be a scene entity (e.g. 'scene.movie_night')")
+
+    decision = evaluate_entity(entity_id=scene_id, domain="scene")
+    if decision.decision == PolicyDecision.DENY:
+        raise ToolExecutionError(403, decision.reason or "Denied by policy")
+    if decision.decision == PolicyDecision.REQUIRE_CONFIRMATION:
+        raise ToolExecutionError(409, decision.reason or "Confirmation required")
+
+    result = await ha_client.activate_scene(scene_id)
+    return ToolResponse(status="ok", data=result, detail=None)
+
+
+# ---------------------------------------------------------------------------
 # ha_call_service
 # ---------------------------------------------------------------------------
 

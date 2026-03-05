@@ -15,6 +15,7 @@ from fastmcp import FastMCP
 from .audit import emit_tool_audit
 from .ha_tools import (
     ToolExecutionError,
+    _handle_activate_scene,
     _handle_call_service,
     _handle_get_state,
     _handle_list_areas,
@@ -98,6 +99,21 @@ async def ha_list_scenes() -> list:
     Scenes in denied domains are silently excluded.
     """
     result = await _audited("ha_list_scenes", {}, _handle_list_scenes({}))
+    return result.data
+
+
+@mcp.tool
+async def ha_activate_scene(scene_id: str) -> dict:
+    """Activate a Home Assistant scene.
+
+    Policy is enforced: the scene domain must be in the allowlist.
+    Use ha_list_scenes to discover available scene entity IDs.
+
+    Args:
+        scene_id: Scene entity ID, e.g. 'scene.movie_night'.
+    """
+    args = {"scene_id": scene_id}
+    result = await _audited("ha_activate_scene", args, _handle_activate_scene(args))
     return result.data
 
 

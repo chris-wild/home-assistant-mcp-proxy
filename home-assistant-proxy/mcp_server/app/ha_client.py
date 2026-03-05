@@ -91,6 +91,10 @@ class HomeAssistantClient:
         response = await self._request("GET", "/api/states")
         return [e for e in response.json() if e.get("entity_id", "").startswith("scene.")]
 
+    async def activate_scene(self, scene_id: str) -> dict:
+        """Activate a Home Assistant scene by entity_id (e.g. 'scene.movie_night')."""
+        return await self.call_service("scene", "turn_on", target={"entity_id": scene_id})
+
     async def get_state(self, entity_id: str) -> dict:
         response = await self._request("GET", f"/api/states/{entity_id}")
         return response.json()
