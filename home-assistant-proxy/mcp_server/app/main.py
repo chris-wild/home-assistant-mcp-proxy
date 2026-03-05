@@ -31,15 +31,11 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Home Assistant MCP Proxy",
-    version="0.4.2",
+    version="0.4.3",
     docs_url="/docs",
     redoc_url="/redoc",
     lifespan=lifespan,
 )
-
-# Mount the FastMCP ASGI app at root so /mcp is reachable directly.
-app.mount("/", mcp_app)
-
 
 @app.get("/health")
 async def health() -> dict:
@@ -48,3 +44,8 @@ async def health() -> dict:
         "allowed_domains": settings.allowed_domains,
         "allowed_entities": settings.allowed_entities,
     }
+
+
+# Mount the FastMCP ASGI app at root so /mcp is reachable directly.
+# Must be registered AFTER explicit routes, as a root mount is greedy.
+app.mount("/", mcp_app)
