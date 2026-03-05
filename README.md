@@ -23,6 +23,19 @@ Runs as a **Home Assistant Add-on** — installed directly from the HA UI, no se
 
 ---
 
+## Authentication
+
+There are two separate authentication boundaries:
+
+| Leg | Auth |
+|---|---|
+| MCP client → proxy (`http://<ha-ip>:8745/mcp`) | **None required** — the proxy endpoint is currently open. See roadmap. |
+| Proxy → Home Assistant REST API | **Automatic** — the HA Supervisor injects a `SUPERVISOR_TOKEN` into the add-on at startup; the proxy uses it as a Bearer token. A manually configured `access_token` takes precedence if set. |
+
+In practice, when running as a Home Assistant add-on with the default configuration, no tokens need to be provided by the MCP client — authentication with HA is handled entirely inside the add-on.
+
+---
+
 ## Installation
 
 1. In Home Assistant go to **Settings → Apps**
